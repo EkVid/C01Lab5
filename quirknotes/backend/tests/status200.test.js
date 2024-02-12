@@ -22,12 +22,16 @@ test("/postNote - Post a note", async () => {
 
   const postNoteBody = await postNoteRes.json();
 
+  console.log(postNoteBody);
   expect(postNoteRes.status).toBe(200);
   expect(postNoteBody.response).toBe("Note added succesfully.");
 });
 
 test("/getAllNotes - Return list of zero notes for getAllNotes", async () => {
   // Code here
+  await fetch(`${SERVER_URL}/deleteAllNotes`, {
+    method: "DELETE", // Specify the method
+  });
   const response = await fetch(`${SERVER_URL}/getAllNotes`);
   const data = await response.json();
 
@@ -43,8 +47,10 @@ test("/getAllNotes - Return list of two notes for getAllNotes", async () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        id: `${i}`,
         title: `${i} Note`,
         content: `Content of the ${i} note`,
+        color: "white",
       }),
     });
   }
@@ -58,11 +64,19 @@ test("/getAllNotes - Return list of two notes for getAllNotes", async () => {
 
 test("/deleteNote - Delete a note", async () => {
   // Code here
-  expect(false).toBe(true);
+  const noteId = 1;
+  response = await fetch(`${SERVER_URL}/deleteNote/${noteId}`, {
+    method: "DELETE",
+  });
+  expect(response.status).toBe(200);
+  const deletionBody = await response.json();
+  expect(deletionBody.response).toBe(`Document with ID ${noteId} deleted.`);
 });
 
 test("/patchNote - Patch with content and title", async () => {
   // Code here
+  const noteId = 2;
+
   expect(false).toBe(true);
 });
 

@@ -9,6 +9,7 @@ const dbName = "quirknotes";
 
 // Connect to MongoDB
 let db;
+A;
 
 async function connectToMongo() {
   const client = new MongoClient(mongoURL);
