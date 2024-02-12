@@ -13,7 +13,7 @@ let notes = []; // In-memory storage for notes
 // Get all notes available
 app.get("/getAllNotes", async (req, res) => {
   try {
-    res.json({ data: notes });
+    res.json({ notes });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
