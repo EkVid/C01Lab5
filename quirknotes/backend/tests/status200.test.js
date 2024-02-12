@@ -31,18 +31,33 @@ test("/getAllNotes - Return list of zero notes for getAllNotes", async () => {
   const response = await fetch(`${SERVER_URL}/getAllNotes`);
   const data = await response.json();
 
-  expect(data).toEqual([]);
+  expect(data.response).toEqual([]);
   expect(response.status).toBe(200);
 });
 
 test("/getAllNotes - Return list of two notes for getAllNotes", async () => {
-  // Code here
-  expect(false).toBe(true);
+  for (let i = 0; i < 2; i++) {
+    await fetch(`${SERVER_URL}/postNote`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: `${i} Note`,
+        content: `Content of the ${i} note`,
+      }),
+    });
+  }
+
+  const response = await fetch(`${SERVER_URL}/getAllNotes`);
+  const data = await response.json();
+
+  expect(data.response.length).toBe(2);
+  expect(response.status).toBe(200);
 });
 
 test("/deleteNote - Delete a note", async () => {
   // Code here
-  expect(false).toBe(true);
 });
 
 test("/patchNote - Patch with content and title", async () => {
