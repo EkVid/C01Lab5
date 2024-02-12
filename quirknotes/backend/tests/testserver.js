@@ -1,68 +1,134 @@
 import express from "express";
 import cors from "cors";
-import bodyParser from "body-parser";
+import { v4 as uuidv4 } from "uuid";
 
 const app = express();
 const PORT = 4000;
 
-let notes = [];
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
-
 app.use(cors());
+app.use(express.json());
 
-app.get("/getAllNotes", (req, res) => {
-  res.json(notes);
-});
+let notes = []; // In-memory storage for notes
 
-app.post("/postNote", express.json(), (req, res) => {
-  const { title, content } = req.body;
-  const newNote = {
-    id: String(notes.length + 1), // Simple way to generate a new ID
-    title,
-    content,
-  };
-  notes.push(newNote);
-  res.json({ response: "Note added succesfully.", note: newNote });
-});
-
-app.delete("/deleteNote/:noteId", (req, res) => {
-  const noteId = req.params.noteId;
-  const index = notes.findIndex((note) => note.id === noteId);
-  if (index === -1) {
-    return res.status(404).json({ error: "Note not found." });
+// Get all notes available
+app.get("/getAllNotes", async (req, res) => {
+  try {
+    res.json({ data: notes });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-  notes.splice(index, 1);
-  res.json({ response: `Document with ID ${noteId} deleted.` });
 });
 
-app.patch("/patchNote/:noteId", express.json(), (req, res) => {
-  const noteId = req.params.noteId;
-  const { title, content } = req.body;
-  const note = notes.find((note) => note.id === noteId);
-  if (!note) {
-    return res.status(404).json({ error: "Note not found." });
+// Post a note
+app.post("/postNote", async (req, res) => {
+  try {
+    const { title, content } = req.body;
+    if (!title || !content) {
+      return res
+        .status(400)
+        .json({ error: "Title and content are both required." });
+    }
+
+    const newNote = {
+      id: uuidv4(), // Generate a unique identifier for the note
+      title,
+      content,
+      createdAt: new Date(),
+    };
+    notes.push(newNote);
+    res.json({
+      response: "Note added succesfully.",
+      insertedId: newNote.id,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-  if (title) note.title = title;
-  if (content) note.content = content;
-  res.json({ response: `Document with ID ${noteId} patched.`, note });
 });
 
-app.delete("/deleteAllNotes", (req, res) => {
-  const count = notes.length;
-  notes = []; // Reset the notes array
-  res.json({ message: `${count} note(s) deleted.` });
+// Delete a note
+app.delete("/deleteNote/:noteId", async (req, res) => {
+  try {
+    const noteId = req.params.noteId;
+    const initialLength = notes.length;
+    notes = notes.filter((note) => note.id !== noteId);
+
+    if (initialLength === notes.length) {
+      return res
+        .status(404)
+        .json({ error: "Unable to find note with given ID." });
+    }
+    res.json({ response: `Document with ID ${noteId} deleted.` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-app.patch("/updateNoteColor/:noteId", express.json(), (req, res) => {
+// Patch a note
+app.patch("/patchNote/:noteId", async (req, res) => {
+  try {
+    const { noteId } = req.params;
+    const { title, content } = req.body;
+
+    let noteFound = false;
+    notes = notes.map((note) => {
+      if (note.id === noteId) {
+        noteFound = true;
+        return {
+          ...note,
+          ...(title && { title }),
+          ...(content && { content }),
+        };
+      }
+      return note;
+    });
+
+    if (!noteFound) {
+      return res
+        .status(404)
+        .json({ error: "Unable to find note with given ID." });
+    }
+
+    res.json({ response: `Note with ID ${noteId} patched.` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete("/deleteAllNotes", async (req, res) => {
+  try {
+    const deletedCount = notes.length;
+    notes = []; // Clear the array
+    res.json({ response: `${deletedCount} note(s) deleted.` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.patch("/updateNoteColor/:noteId", async (req, res) => {
   const { noteId } = req.params;
   const { color } = req.body;
-  const note = notes.find((note) => note.id === noteId);
-  if (!note) {
-    return res.status(404).json({ error: "Note not found." });
+
+  let noteFound = false;
+  notes = notes.map((note) => {
+    if (note.id === noteId) {
+      noteFound = true;
+      return { ...note, color };
+    }
+    return note;
+  });
+
+  if (!noteFound) {
+    return res.status(400).json({ error: "Invalid note ID." });
   }
-  note.color = color;
-  res.json({ message: "Note color updated successfully.", note });
+
+  try {
+    res.json({ message: "Note color updated successfully." });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Open Port
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });

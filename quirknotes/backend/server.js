@@ -9,7 +9,6 @@ const dbName = "quirknotes";
 
 // Connect to MongoDB
 let db;
-A;
 
 async function connectToMongo() {
   const client = new MongoClient(mongoURL);
@@ -44,7 +43,7 @@ app.get("/getAllNotes", express.json(), async (req, res) => {
     // Find notes with username attached to them
     const collection = db.collection(COLLECTIONS.notes);
     const data = await collection.find().toArray();
-    res.json({ data });
+    res.json({ data: notes });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
