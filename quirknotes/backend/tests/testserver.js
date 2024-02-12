@@ -88,7 +88,7 @@ app.patch("/patchNote/:noteId", async (req, res) => {
         .json({ error: "Unable to find note with given ID." });
     }
 
-    res.json({ response: `Note with ID ${noteId} patched.` });
+    res.json({ response: `Document with ID ${noteId} patched.` });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
