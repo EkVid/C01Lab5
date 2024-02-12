@@ -266,11 +266,11 @@ test("/updateNoteColor - Update color of a note to red (#FF0000)", async () => {
 
   expect(newNoteResponse.status).toBe(200);
   const noteCreationBody = await newNoteResponse.json();
-  const noteId = noteCreationBody.insertedId; // Ensure this matches the property name your API actually returns
+  const noteId = noteCreationBody.insertedId;
   expect(noteId).toBeDefined();
 
   // Update the note color
-  const updatedColor = "#FF0000"; // Use the actual color code you want to test
+  const updatedColor = "#FF0000";
   const updateResponse = await fetch(
     `${SERVER_URL}/updateNoteColor/${noteId}`,
     {
